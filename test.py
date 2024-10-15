@@ -1,11 +1,10 @@
 import random
-
-WIDTH = 39 # Width of the maze (must be odd).
-HEIGHT = 19 # Height of the maze (must be odd).
+import sys
+sys.setrecursionlimit(10**6)
+WIDTH = 143
+HEIGHT = 87
 assert WIDTH % 2 == 1 and WIDTH >= 3
 assert HEIGHT % 2 == 1 and HEIGHT >= 3
-SEED = 1
-random.seed(SEED)
 
 # Use these characters for displaying the maze:
 EMPTY = ' '
@@ -40,8 +39,8 @@ def visit(x, y):
     recursively move to neighboring unvisited spaces. This
     function backtracks when the mark has reached a dead end."""
     maze[(x, y)] = EMPTY # "Carve out" the space at x, y.
-    printMaze(maze, x, y) # Display the maze as we generate it.
-    print('\n\n')
+    #printMaze(maze, x, y) # Display the maze as we generate it.
+    #print('\n\n')
 
     while True:
         # Check which neighboring spaces adjacent to
@@ -98,3 +97,4 @@ visit(1, 1)
 
 # Display the final resulting maze data structure:
 printMaze(maze)
+

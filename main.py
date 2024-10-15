@@ -1,10 +1,9 @@
 import random
 import pygame
-import time
 
 # Constants for maze properties
-WIDTH = 101
-HEIGHT = WIDTH
+WIDTH = 143
+HEIGHT = 87
 maze = {}
 EMPTY = 0
 WALL = 1
@@ -16,8 +15,8 @@ NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 DIRECTIONS = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # For solving
 
 # Colors for rendering
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+WHITE = (255, 255, 255) # Empty space
+BLACK = (0, 0, 0) # Walls
 GREEN = (0, 255, 0)   # Entrance
 YELLOW = (255, 255, 0) # Exit
 RED = (255, 0, 0)     # Path
@@ -53,7 +52,7 @@ def showMaze(maze, screen, entrance, exit, path=[]):
 
     # Draw the path in red, but avoid portals
     for x, y in path:
-        if maze[(x, y)] not in [PORTAL1, PORTAL2]:
+        if maze[(x, y)] not in [PORTAL1, PORTAL2] and (x, y) != entrance and (x, y) != exit:
             pygame.draw.rect(screen, RED, (x * 10, y * 10, 10, 10))
 
     pygame.display.flip()
@@ -191,7 +190,7 @@ def main():
                 return
 
 import sys
-sys.setrecursionlimit(10**6)
-import threading
-threading.stack_size(2**26)
-threading.Thread(target=main).start()
+if __name__ == "__main__":
+    import sys
+    sys.setrecursionlimit(10**6)
+    main()
