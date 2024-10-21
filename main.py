@@ -1,7 +1,14 @@
+"""
+Este módulo genera un laberinto y proporciona una interfaz gráfica usando Pygame. 
+El laberinto es resuelto mediante un algoritmo de búsqueda recursiva. Incluye funcionalidades para:
+- Mostrar el laberinto.
+- Crear entradas, salidas y portales en posiciones aleatorias.
+- Resolver el laberinto visualmente, considerando portales como atajos.
+"""
+
 import random
 import pygame
 
-# Constants for maze properties
 WIDTH = 143
 HEIGHT = 87
 maze = {}
@@ -10,29 +17,33 @@ WALL = 1
 PORTAL1 = 3
 PORTAL2 = 4
 
-# Directions for movement
 NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
-DIRECTIONS = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # For solving
+DIRECTIONS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
-# Colors for rendering
-WHITE = (255, 255, 255) # Empty space
-BLACK = (0, 0, 0) # Walls
-GREEN = (0, 255, 0)   # Entrance
-YELLOW = (255, 255, 0) # Exit
-RED = (255, 0, 0)     # Path
-BLUE = (0, 0, 255)    # Portal 1
-ORANGE = (255, 165, 0) # Portal 2
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+ORANGE = (255, 165, 0)
 
-# Initialize maze with walls
 for x in range(WIDTH):
     for y in range(HEIGHT):
         maze[(x, y)] = WALL
 
 def showMaze(maze, screen, entrance, exit, path=[]):
-    """Render the maze with entrance, exit, and optional path."""
+    """
+    Muestra el laberinto en la pantalla gráfica utilizando Pygame.
+    
+    Parámetros:
+    - maze: Diccionario que contiene el estado actual del laberinto.
+    - screen: La ventana de Pygame donde se dibuja el laberinto.
+    - entrance: Coordenadas de la entrada del laberinto.
+    - exit: Coordenadas de la salida del laberinto.
+    - path: Lista opcional que contiene las posiciones del camino a seguir.
+    """
     screen.fill(WHITE)
-
-    # Draw walls and empty spaces
     for x in range(WIDTH):
         for y in range(HEIGHT):
             if maze[(x, y)] == EMPTY:
@@ -44,26 +55,26 @@ def showMaze(maze, screen, entrance, exit, path=[]):
             elif maze[(x, y)] == PORTAL2:
                 color = ORANGE
             pygame.draw.rect(screen, color, (x * 10, y * 10, 10, 10))
-
-    # Draw entrance and exit
     pygame.draw.rect(screen, GREEN, (entrance[0] * 10, entrance[1] * 10, 10, 10))
     if exit:
         pygame.draw.rect(screen, YELLOW, (exit[0] * 10, exit[1] * 10, 10, 10))
-
-    # Draw the path in red, but avoid portals
     for x, y in path:
         if maze[(x, y)] not in [PORTAL1, PORTAL2] and (x, y) != entrance and (x, y) != exit:
             pygame.draw.rect(screen, RED, (x * 10, y * 10, 10, 10))
-
     pygame.display.flip()
 
 def visit(x, y, screen, hasVisited):
-    """Recursive maze generation using DFS."""
+    """
+    Función recursiva que visita las celdas del laberinto generando caminos.
+    
+    Parámetros:
+    - x, y: Coordenadas de la celda actual.
+    - screen: Ventana gráfica de Pygame.
+    - hasVisited: Lista de celdas ya visitadas para evitar volver a ellas.
+    """
     maze[(x, y)] = EMPTY
-    showMaze(maze, screen, (1, 1), None)  # Display updates during generation
-    pygame.event.pump()  # Handle event queue to prevent crashing
-    #time.sleep(0.01)  # Add a small delay to make updates visible
-
+    showMaze(maze, screen, (1, 1), None)
+    pygame.event.pump()
     while True:
         unvisitedNeighbors = []
         if y > 1 and (x, y - 2) not in hasVisited:
@@ -74,9 +85,8 @@ def visit(x, y, screen, hasVisited):
             unvisitedNeighbors.append(WEST)
         if x < WIDTH - 2 and (x + 2, y) not in hasVisited:
             unvisitedNeighbors.append(EAST)
-
         if len(unvisitedNeighbors) == 0:
-            return  # Maze generation complete
+            return
         else:
             direction = random.choice(unvisitedNeighbors)
             if direction == NORTH:
@@ -91,17 +101,21 @@ def visit(x, y, screen, hasVisited):
             elif direction == EAST:
                 nextX, nextY = x + 2, y
                 maze[(x + 1, y)] = EMPTY
-
             hasVisited.append((nextX, nextY))
             visit(nextX, nextY, screen, hasVisited)
 
 def generateExitAndEntrance():
-    """Generate a random exit on the outer edge of the maze and an entrance on a different side."""
+    """
+    Genera una posición de entrada y salida aleatoria en los bordes del laberinto.
+    
+    Retorna:
+    - exit: Coordenadas de la salida del laberinto.
+    - entrance: Coordenadas de la entrada del laberinto.
+    """
     edges = ['top', 'bottom', 'left', 'right']
     exit_edge = random.choice(edges)
     edges.remove(exit_edge)
     entrance_edge = random.choice(edges)
-
     if exit_edge == 'top':
         exit = (random.choice(range(1, WIDTH, 2)), 0)
     elif exit_edge == 'bottom':
@@ -110,7 +124,6 @@ def generateExitAndEntrance():
         exit = (0, random.choice(range(1, HEIGHT, 2)))
     elif exit_edge == 'right':
         exit = (WIDTH - 1, random.choice(range(1, HEIGHT, 2)))
-
     if entrance_edge == 'top':
         entrance = (random.choice(range(1, WIDTH, 2)), 0)
     elif entrance_edge == 'bottom':
@@ -119,36 +132,47 @@ def generateExitAndEntrance():
         entrance = (0, random.choice(range(1, HEIGHT, 2)))
     elif entrance_edge == 'right':
         entrance = (WIDTH - 1, random.choice(range(1, HEIGHT, 2)))
-
-    maze[exit] = EMPTY  # Ensure exit is on a path
-    maze[entrance] = EMPTY  # Ensure entrance is on a path
+    maze[exit] = EMPTY
+    maze[entrance] = EMPTY
     return exit, entrance
 
 def generatePortals():
-    """Generate one pair of portals in the maze."""
+    """
+    Coloca dos portales en posiciones aleatorias del laberinto. Los portales actúan como atajos.
+    
+    Retorna:
+    - portal1: Coordenadas del primer portal.
+    - portal2: Coordenadas del segundo portal.
+    """
     portal1 = random.choice([(x, y) for x in range(1, WIDTH, 2) for y in range(1, HEIGHT, 2) if maze[(x, y)] == EMPTY])
     portal2 = random.choice([(x, y) for x in range(1, WIDTH, 2) for y in range(1, HEIGHT, 2) if maze[(x, y)] == EMPTY and (x, y) != portal1])
     maze[portal1] = PORTAL1
     maze[portal2] = PORTAL2
-
     return (portal1, portal2)
 
 def solveMaze(screen, current, exit, path=[]):
+    """
+    Resuelve el laberinto utilizando un algoritmo recursivo de búsqueda.
+    
+    Parámetros:
+    - screen: Ventana gráfica de Pygame.
+    - current: Coordenadas actuales en el laberinto.
+    - exit: Coordenadas de la salida del laberinto.
+    - path: Lista que contiene el camino actual desde la entrada.
+    
+    Retorna:
+    - True si encuentra una solución, False si no hay solución.
+    """
     if current == exit:
-        path.append(current)  # Add the exit to the path
-        showMaze(maze, screen, entrance, exit, path)  # Display the final path
-        return True  # Maze solved
-
+        path.append(current)
+        showMaze(maze, screen, entrance, exit, path)
+        return True
     x, y = current
-    path.append(current)  # Add current position to the path
-    pygame.event.pump()  # Handle event queue to prevent crashing
-    showMaze(maze, screen, entrance, exit, path)  # Display updates during solving
-    #time.sleep(0.01)  # Delay for visualization
-
-    # Explore neighbors in all four directions
+    path.append(current)
+    pygame.event.pump()
+    showMaze(maze, screen, entrance, exit, path)
     for dx, dy in DIRECTIONS:
         nx, ny = x + dx, y + dy
-
         if (nx, ny) in maze and maze[(nx, ny)] in [EMPTY, PORTAL1, PORTAL2] and (nx, ny) not in path:
             if maze[(nx, ny)] == PORTAL1:
                 if solveMaze(screen, portals[1], exit, path):
@@ -158,39 +182,28 @@ def solveMaze(screen, current, exit, path=[]):
                     return True
             else:
                 if solveMaze(screen, (nx, ny), exit, path):
-                    return True  # Path to exit found
-
-    path.pop()  # Backtrack if no path found
+                    return True
+    path.pop()
     return False
 
 def main():
+    """
+    Función principal que inicializa Pygame, genera el laberinto, las entradas, salidas y portales, y lo resuelve.
+    """
     pygame.init()
     screen = pygame.display.set_mode((WIDTH * 10, HEIGHT * 10))
-
-    # Generate maze starting from (1, 1)
     hasVisited = [(1, 1)]
     visit(1, 1, screen, hasVisited)
-
-    # Generate a random exit on the maze's outer edge and an entrance on a different side
     global entrance
     exit, entrance = generateExitAndEntrance()
-
-    # Generate portals
     global portals
     portals = generatePortals()
-
-    # Solve the maze from entrance to exit
     solveMaze(screen, entrance, exit)
-
-    # Main loop to keep the window open
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
 
-import sys
-if __name__ == "__main__":
-    import sys
-    sys.setrecursionlimit(10**6)
+if __name__ == '__main__':
     main()
