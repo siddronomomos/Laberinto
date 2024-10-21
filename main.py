@@ -7,7 +7,12 @@ El laberinto es resuelto mediante un algoritmo de búsqueda recursiva. Incluye f
 """
 
 import random
+import sys
 import pygame
+
+
+sys.setrecursionlimit(1500)  
+
 
 WIDTH = 143
 HEIGHT = 87
