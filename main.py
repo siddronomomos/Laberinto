@@ -9,6 +9,7 @@ El laberinto es resuelto mediante un algoritmo de búsqueda recursiva. Incluye f
 import random
 import sys
 import pygame
+import heapq
 
 
 sys.setrecursionlimit(1500)  
@@ -191,6 +192,59 @@ def solveMaze(screen, current, exit, path=[]):
     path.pop()
     return False
 
+def solveMazeDijkstra(screen, start, exit):
+    """
+    Resuelve el laberinto utilizando el algoritmo de Dijkstra.
+
+    Parámetros:
+    - screen: Ventana gráfica de Pygame.
+    - start: Coordenadas de inicio en el laberinto.
+    - exit: Coordenadas de la salida del laberinto.
+
+    Retorna:
+    - True si encuentra una solución, False si no hay solución.
+    """
+    priority_queue = []
+    heapq.heappush(priority_queue, (0, start))  
+
+    distances = {start: 0}
+    predecessors = {}
+
+    while priority_queue:
+        current_distance, current = heapq.heappop(priority_queue)
+
+        if current == exit:
+            path = []
+            while current:
+                path.append(current)
+                current = predecessors.get(current)
+            path.reverse()
+            showMaze(maze, screen, start, exit, path)
+            return True
+
+        x, y = current
+        pygame.event.pump()
+        showMaze(maze, screen, start, exit, list(predecessors.keys()))
+
+        for dx, dy in DIRECTIONS:
+            nx, ny = x + dx, y + dy
+            neighbor = (nx, ny)
+
+            if neighbor in maze and maze[neighbor] in [EMPTY, PORTAL1, PORTAL2]:
+                new_distance = current_distance + 1
+
+                if maze[neighbor] == PORTAL1:
+                    neighbor = portals[1]
+                elif maze[neighbor] == PORTAL2:
+                    neighbor = portals[0]
+
+                if neighbor not in distances or new_distance < distances[neighbor]:
+                    distances[neighbor] = new_distance
+                    predecessors[neighbor] = current
+                    heapq.heappush(priority_queue, (new_distance, neighbor))
+
+    return False
+
 def main():
     """
     Función principal que inicializa Pygame, genera el laberinto, las entradas, salidas y portales, y lo resuelve.
@@ -203,7 +257,7 @@ def main():
     exit, entrance = generateExitAndEntrance()
     global portals
     portals = generatePortals()
-    solveMaze(screen, entrance, exit)
+    solveMazeDijkstra(screen, entrance, exit)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
